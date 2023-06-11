@@ -8,7 +8,7 @@ class User(AbstractUser):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.CharField(max_length=500)
+    bio = models.CharField(max_length=500, default="MarkChat user.")
     friends = models.ManyToManyField('self')
     created_at = models.DateTimeField(auto_now_add=True)
 
