@@ -1,1 +1,4 @@
 .venv
+./chat/migrations
+./chat/__pycache__
+db.sqlite3
