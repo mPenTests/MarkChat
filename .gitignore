@@ -1,5 +1,5 @@
 .venv
-./chat/migrations
-./chat/__pycache__
-./MarkChat/__pycache__w
+./chat/migrations/
+./chat/__pycache__/
+./MarkChat/__pycache__/
 db.sqlite3
