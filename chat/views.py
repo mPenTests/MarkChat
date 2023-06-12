@@ -4,9 +4,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 import requests, random
-from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, LoginSerializer)
+from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, 
+                          LoginSerializer, GroupSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
-from .models import User, UserProfile
+from .models import User, UserProfile, Group
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -97,3 +98,13 @@ def login(request):
         }, HTTP_200_OK)
         
     return Response(serializer.errors, HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_groups(request):
+    profile = UserProfile.objects.get(user=request.user)
+    groups = Group.objects.filter(users=profile)
+    serializer = GroupSerializer(groups, many=True)
+    
+    return Response(serializer.data, HTTP_200_OK)

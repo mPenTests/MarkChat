@@ -55,3 +55,9 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("user_does_not_exist")
         
         return value
+    
+    
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['name']
