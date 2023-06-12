@@ -10,7 +10,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_verified = models.BooleanField(default=False)
     bio = models.CharField(max_length=500, default="MarkChat user.")
-    friends = models.ManyToManyField('self')
+    friends = models.ManyToManyField('self', null=True, blank=True, symmetrical=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
