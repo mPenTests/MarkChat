@@ -41,3 +41,17 @@ class VerifyVerificationCodeSerializer(serializers.Serializer):
             raise serializers.ValidationError("verification_code_is_wrong")
         
         return value
+    
+    
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+    
+    def validate_username(self, value):
+        try:
+            User.objects.get(username=value)
+            
+        except User.DoesNotExist:
+            raise serializers.ValidationError("user_does_not_exist")
+        
+        return value

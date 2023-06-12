@@ -4,9 +4,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 import requests, random
-from .serializers import RegisterSerializer, VerifyVerificationCodeSerializer
+from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, LoginSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
 from .models import User, UserProfile
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 # Create your views here.
 
@@ -70,3 +73,27 @@ def verify_verification_code(request):
         
             
     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login(request):
+    serializer = LoginSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        if UserProfile.objects.get(user=User.objects.get(username=serializer.validated_data["username"])).is_verified == False:
+            return Response({"message": "user_not_verified"}, HTTP_400_BAD_REQUEST)
+        
+        user = authenticate(username=serializer.validated_data["username"], password=serializer.validated_data["password"])
+        
+        if user is None:
+            return Response({"message": "auth_invalid"}, HTTP_400_BAD_REQUEST)
+        
+        tokens = RefreshToken.for_user(user)
+        
+        return Response({
+            "refresh": str(tokens),
+            "access": str(tokens.access_token)    
+        }, HTTP_200_OK)
+        
+    return Response(serializer.errors, HTTP_400_BAD_REQUEST)
