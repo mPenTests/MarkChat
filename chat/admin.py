@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models  import User, UserProfile, Message, Group
 
 # Register your models here.
+admin.site.register([User, UserProfile, Message, Group])

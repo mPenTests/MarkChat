@@ -124,3 +124,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'chat.User'
+
+MARKMAIL_CAPTCHA = "9636f816763ecbfc17862946a7ca6191fedebb456444fa4dfd3e4bdaa4bd2b92"
