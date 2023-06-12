@@ -4,9 +4,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 import requests, random
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, VerifyVerificationCodeSerializer
 from MarkChat.settings import MARKMAIL_CAPTCHA
-from .models import User
+from .models import User, UserProfile
 
 # Create your views here.
 
@@ -55,3 +55,18 @@ def register(request):
     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
     
     
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_verification_code(request):
+    serializer = VerifyVerificationCodeSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        user = User.objects.get(username=serializer.validated_data["username"])
+        profile = UserProfile.objects.get(user=user)
+        profile.is_verified = True
+        profile.save()
+            
+        return Response({"message": "user_verified"}, status=HTTP_200_OK)
+        
+            
+    return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)

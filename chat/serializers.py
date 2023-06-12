@@ -15,3 +15,29 @@ class RegisterSerializer(serializers.ModelSerializer):
         profile.save()
         
         return user
+    
+    
+class VerifyVerificationCodeSerializer(serializers.Serializer):
+    verification_code = serializers.IntegerField()
+    username = serializers.CharField()
+
+    def validate_username(self, value):
+        try:
+            User.objects.get(username=value)
+            
+        except User.DoesNotExist:
+            raise serializers.ValidationError("user_does_not_exist")
+        
+        return value
+    
+    def validate_verification_code(self, value):
+        try:
+            user = User.objects.get(username=self.initial_data["username"])
+            
+        except User.DoesNotExist:
+            raise serializers.ValidationError("user_does_not_exist")
+        
+        if user.verification_code != value:
+            raise serializers.ValidationError("verification_code_is_wrong")
+        
+        return value
