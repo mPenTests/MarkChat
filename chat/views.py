@@ -6,6 +6,7 @@ from rest_framework.response import Response
 import requests, random
 from .serializers import RegisterSerializer
 from MarkChat.settings import MARKMAIL_CAPTCHA
+from .models import User
 
 # Create your views here.
 
@@ -40,13 +41,14 @@ def send_confirmation_code(email):
     
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
     
     if serializer.is_valid():
-        serializer.save(verification_code=send_confirmation_code(serializer.validated_data["email"]))
+        serializer.validated_data["verification_code"] = send_confirmation_code(serializer.validated_data["email"])
+        serializer.save()  
         
         return Response({"message": "user_registered"}, status=HTTP_201_CREATED)
     
