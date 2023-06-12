@@ -138,7 +138,7 @@ def add_friend(request):
         if friend in profile.friends.all():
             return Response({"message": "friend_already_added"}, HTTP_400_BAD_REQUEST)
         
-        profile.friends.add(profile)
+        profile.friends.add(friend)
         profile.save()
         
         return Response({"message": "friend_added"}, HTTP_200_OK)
