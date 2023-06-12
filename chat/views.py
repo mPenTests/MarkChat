@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 import requests, random
 from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, 
-                          LoginSerializer, GroupSerializer)
+                          LoginSerializer, GroupSerializer,
+                          ChangePasswordSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
 from .models import User, UserProfile, Group
 from django.contrib.auth import authenticate
@@ -108,3 +109,19 @@ def get_groups(request):
     serializer = GroupSerializer(groups, many=True)
     
     return Response(serializer.data, HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+    
+    if serializer.is_valid():
+        user = User.objects.get(username=request.user)
+        user.set_password(serializer.validated_data["new_password"])
+        user.save()
+        
+        return Response({"message": "password_changed"}, HTTP_200_OK)
+    
+    return Response(serializer.errors, HTTP_400_BAD_REQUEST)
+
