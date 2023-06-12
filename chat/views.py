@@ -6,7 +6,7 @@ from rest_framework.response import Response
 import requests, random
 from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, 
                           LoginSerializer, GroupSerializer,
-                          ChangePasswordSerializer)
+                          ChangePasswordSerializer, AddFriendSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
 from .models import User, UserProfile, Group
 from django.contrib.auth import authenticate
@@ -125,3 +125,22 @@ def change_password(request):
     
     return Response(serializer.errors, HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_friend(request):
+    serializer = AddFriendSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        profile = UserProfile.objects.get(user=request.user)
+        friend = UserProfile.objects.get(user=User.objects.get(username=serializer.validated_data["username"]))
+        
+        if friend in profile.friends.all():
+            return Response({"message": "friend_already_added"}, HTTP_400_BAD_REQUEST)
+        
+        profile.friends.add(profile)
+        profile.save()
+        
+        return Response({"message": "friend_added"}, HTTP_200_OK)
+    
+    return Response(serializer.errors, HTTP_400_BAD_REQUEST)

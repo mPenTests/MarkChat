@@ -74,3 +74,16 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("old_password_is_wrong")
         
         return value
+    
+    
+class AddFriendSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    
+    def validate_username(self, value):
+        try:
+            User.objects.get(username=value)
+            
+        except User.DoesNotExist:
+            raise serializers.ValidationError("user_does_not_exist")
+        
+        return value
