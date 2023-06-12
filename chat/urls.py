@@ -6,5 +6,6 @@ urlpatterns = [
     path("api/verify/code", views.verify_verification_code),
     path("api/login", views.login),
     path("api/change/password", views.change_password),
-    path("api/add/friend", views.add_friend)
+    path("api/add/friend", views.add_friend),
+    path("api/get/profile", views.get_profile)
 ]

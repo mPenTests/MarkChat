@@ -1,16 +1,20 @@
 from django.shortcuts import render
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 import requests, random
 from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, 
                           LoginSerializer, GroupSerializer,
-                          ChangePasswordSerializer, AddFriendSerializer)
+                          ChangePasswordSerializer, AddFriendSerializer,
+                          GetProfileSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
 from .models import User, UserProfile, Group
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.parsers import MultiPartParser, FormParser
+
+
 
 
 # Create your views here.
@@ -144,3 +148,12 @@ def add_friend(request):
         return Response({"message": "friend_added"}, HTTP_200_OK)
     
     return Response(serializer.errors, HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    model = UserProfile.objects.get(user=request.user)
+    serializer = GetProfileSerializer(model)
+    
+    return Response(serializer.data, HTTP_200_OK)

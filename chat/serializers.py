@@ -87,3 +87,14 @@ class AddFriendSerializer(serializers.Serializer):
             raise serializers.ValidationError("user_does_not_exist")
         
         return value
+    
+    
+class GetProfileSerializer(serializers.ModelSerializer):
+    user = serializers.CharField()
+    
+    class Meta:
+        model = UserProfile
+        fields = ["bio", "user"]
+        
+    def get_user(self, obj):
+        return obj.user.username
