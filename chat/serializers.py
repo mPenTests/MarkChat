@@ -98,3 +98,9 @@ class GetProfileSerializer(serializers.ModelSerializer):
         
     def get_user(self, obj):
         return obj.user.username
+    
+    
+class UploadProfilePictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["profile_pic"]

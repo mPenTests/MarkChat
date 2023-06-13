@@ -7,13 +7,14 @@ import requests, random
 from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, 
                           LoginSerializer, GroupSerializer,
                           ChangePasswordSerializer, AddFriendSerializer,
-                          GetProfileSerializer)
+                          GetProfileSerializer, UploadProfilePictureSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
 from .models import User, UserProfile, Group
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import MultiPartParser, FormParser
-
+import os
+from django.core.exceptions import ValidationError
 
 
 
@@ -157,3 +158,19 @@ def get_profile(request):
     serializer = GetProfileSerializer(model)
     
     return Response(serializer.data, HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def upload(request):
+    serializer = UploadProfilePictureSerializer(data=request.data)
+    user = UserProfile.objects.get(user=request.user)
+    
+    if serializer.is_valid():
+        serializer.instance = user
+        serializer.save()
+        
+        return Response({"message": "profile_picture_uploaded"}, HTTP_200_OK)
+    
+    return Response(serializer.errors, HTTP_400_BAD_REQUEST)

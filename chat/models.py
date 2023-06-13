@@ -9,6 +9,7 @@ class User(AbstractUser):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_verified = models.BooleanField(default=False)
+    profile_pic = models.ImageField(upload_to='profile_pics', blank=True, null=True)
     bio = models.CharField(max_length=500, default="MarkChat user.")
     friends = models.ManyToManyField('self', null=True, blank=True, symmetrical=False)
     created_at = models.DateTimeField(auto_now_add=True)
