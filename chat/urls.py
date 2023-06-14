@@ -11,4 +11,6 @@ urlpatterns = [
     path("api/upload/profile/picture", views.upload),
     path("api/send/reset/code", views.send_reset_password_code),
     path("api/reset/password", views.reset_password),
+    path("api/delete/account", views.delete_account),
+    path("api/deactivate/account", views.deactivate_account)
 ]

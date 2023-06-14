@@ -209,3 +209,23 @@ def reset_password(request):
         return Response({"message": "password_reset_ok"}, HTTP_200_OK)
     
     return Response(serializer.errors, HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_account(request):
+    user = request.user
+    user.delete()
+    
+    return Response({"message": "account_deleted"}, HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def deactivate_account(request):
+    user = request.user
+    user.is_active = False
+    user.save()
+    
+    return Response({"message": "account_deactivated"}, HTTP_200_OK)
+
