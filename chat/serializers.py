@@ -140,3 +140,9 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("verification_code_is_wrong")
         
         return value
+    
+    
+class GetFriendSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username", "profile_pic"]

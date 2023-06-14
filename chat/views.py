@@ -8,7 +8,8 @@ from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer,
                           LoginSerializer, GroupSerializer,
                           ChangePasswordSerializer, AddFriendSerializer,
                           GetProfileSerializer, UploadProfilePictureSerializer,
-                          SendResetPasswordCodeSerializer, ResetPasswordSerializer)
+                          SendResetPasswordCodeSerializer, ResetPasswordSerializer,
+                          GetFriendSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
 from .models import User, UserProfile, Group
 from django.contrib.auth import authenticate
@@ -229,3 +230,13 @@ def deactivate_account(request):
     
     return Response({"message": "account_deactivated"}, HTTP_200_OK)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_friends(request):
+    serializer = GetFriendSerializer(request.user, many=True)
+    
+    if serializer.is_valid():
+        return Response(serializer.data, HTTP_200_OK)
+    
+    return Response(serializer.errors, HTTP_400_BAD_REQUEST)
