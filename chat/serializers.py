@@ -104,3 +104,39 @@ class UploadProfilePictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ["profile_pic"]
+        
+        
+class SendResetPasswordCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    
+    def validate_email(self, value):
+        try:
+            User.objects.get(email=value)
+            
+        except User.DoesNotExist:
+            raise serializers.ValidationError("no_account_found")
+        
+        return value
+    
+    
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    verification_code = serializers.IntegerField()
+    new_password = serializers.CharField()
+    
+    def validate_email(self, value):
+        try:
+            User.objects.get(email=value)
+            
+        except User.DoesNotExist:
+            raise serializers.ValidationError("no_account_found")
+        
+        return value
+    
+    def validate_verification_code(self, value):
+        user = User.objects.get(email=self.initial_data["email"])
+        
+        if user.verification_code != value:
+            raise serializers.ValidationError("verification_code_is_wrong")
+        
+        return value

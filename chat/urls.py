@@ -8,5 +8,7 @@ urlpatterns = [
     path("api/change/password", views.change_password),
     path("api/add/friend", views.add_friend),
     path("api/get/profile", views.get_profile),
-    path("api/upload/profile/picture", views.upload)
+    path("api/upload/profile/picture", views.upload),
+    path("api/send/reset/code", views.send_reset_password_code),
+    path("api/reset/password", views.reset_password),
 ]

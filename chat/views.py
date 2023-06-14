@@ -7,7 +7,8 @@ import requests, random
 from .serializers import (RegisterSerializer, VerifyVerificationCodeSerializer, 
                           LoginSerializer, GroupSerializer,
                           ChangePasswordSerializer, AddFriendSerializer,
-                          GetProfileSerializer, UploadProfilePictureSerializer)
+                          GetProfileSerializer, UploadProfilePictureSerializer,
+                          SendResetPasswordCodeSerializer, ResetPasswordSerializer)
 from MarkChat.settings import MARKMAIL_CAPTCHA
 from .models import User, UserProfile, Group
 from django.contrib.auth import authenticate
@@ -36,13 +37,13 @@ def login_markmail():
     return response["access"]
 
 
-def send_confirmation_code(email):
+def send_confirmation_code(email, isReset=False):
     access_token = login_markmail()
     random_code = random.randint(1000, 9999)
     data = {
-        "content": f"Here's your verification code: {random_code}",
+        "content": f"Here's your {'recovery' if isReset else 'verification'} code: {random_code}",
         "receiver": email,
-        "subject": "Verify your MarkChat account"
+        "subject": f"{'Reset' if isReset else 'Verify'} your MarkChat account"
     }
 
     request = requests.post(MARKMAIL_URL + "/api/compose", json=data, headers={"Authorization": "Bearer " + access_token})
@@ -72,6 +73,7 @@ def verify_verification_code(request):
     
     if serializer.is_valid():
         user = User.objects.get(username=serializer.validated_data["username"])
+        user.verification_code = None
         profile = UserProfile.objects.get(user=user)
         profile.is_verified = True
         profile.save()
@@ -172,5 +174,38 @@ def upload(request):
         serializer.save()
         
         return Response({"message": "profile_picture_uploaded"}, HTTP_200_OK)
+    
+    return Response(serializer.errors, HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def send_reset_password_code(request):
+    serializer = SendResetPasswordCodeSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]
+        random_code = send_confirmation_code(email, isReset=True)
+        user = User.objects.get(email=email)
+        user.verification_code = random_code
+        user.save()
+        
+        return Response({"message": "code_sent"}, HTTP_200_OK)
+    
+    return Response(serializer.errors, HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    serializer = ResetPasswordSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        user  = User.objects.get(email=serializer.validated_data["email"])
+        user.set_password(serializer.validated_data["new_password"])
+        user.verification_code = None
+        user.save()
+        
+        return Response({"message": "password_reset_ok"}, HTTP_200_OK)
     
     return Response(serializer.errors, HTTP_400_BAD_REQUEST)
