@@ -149,6 +149,9 @@ class GetFriendSerializer(serializers.ModelSerializer):
         
         
 class MessageSerializer(serializers.ModelSerializer):
+    from_user = serializers.CharField(source='from_user.user.username')
+    to_user = serializers.CharField(source='to_user.user.username')
+    
     class Meta:
         model = Message
         fields = ["from_user", "to_user", "message", "created_at"]

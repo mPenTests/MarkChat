@@ -37,7 +37,6 @@ class JWTAuthMiddleware(BaseMiddleware):
     def get_user(user_id):
         User = get_user_model()
         try:
-            print(user_id)
             return User.objects.get(id=user_id)
         except User.DoesNotExist:
             return AnonymousUser()
