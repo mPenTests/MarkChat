@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -179,3 +180,20 @@ SIMPLE_JWT = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CHANNELS = [
+    "chat.jwt_middleware.JWTAuthMiddleware",
+]
+
+ASGI_APPLICATION = 'MarkChat.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+CHANNELS_WS_PROTOCOLS = [
+    "channels.routing.protocol.http.HtppProtocol",
+    "chat.jwt_middleware.JWTAuthMiddleware"
+]

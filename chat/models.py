@@ -1,5 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+import uuid
+
 
 # Create your models here.
 class User(AbstractUser):
@@ -19,13 +23,15 @@ class UserProfile(models.Model):
 
 class Message(models.Model):
     from_user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='sender')
+    group_uuid = models.UUIDField(blank=True, null=True)
     to_user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='receiver')
     message = models.CharField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     
     
 class Group(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     users = models.ManyToManyField(UserProfile)
-    messages = models.ManyToManyField(Message)
+    messages = models.ManyToManyField(Message, null=True)

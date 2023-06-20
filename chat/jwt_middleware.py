@@ -1,32 +1,43 @@
 from channels.db import database_sync_to_async
+from channels.middleware import BaseMiddleware
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.tokens import AccessToken
 
-class JWTAuthMiddleware:
-    def __init__(self, inner):
-        self.inner = inner
-
+class JWTAuthMiddleware(BaseMiddleware):
     async def __call__(self, scope, receive, send):
-        try:
-            headers = dict(scope["headers"])
-            if b"authorization" in headers:
-                token_name, token = headers[b"authorization"].decode().split()
-                if token_name.lower() == "bearer":
-                    validated_token = await self.validate_token(token)
-                    if validated_token:
-                        # Attach the user object to the scope
-                        scope["user"] = validated_token.user
-        except TokenError as e:
-            # Handle invalid or expired tokens
-            scope["user"] = AnonymousUser()
+        headers = dict(scope["headers"])
 
-        return await self.inner(scope, receive, send)
+        if b"authorization" in headers:
+            try:
+                access_token = self.get_access_token(headers)
+                validated_token = await self.validate_token(access_token)
+                user_id = validated_token["user_id"]
+                scope["user"] = await self.get_user(user_id)
+            except (InvalidToken, TokenError):
+                scope["user"] = AnonymousUser()
 
+        return await super().__call__(scope, receive, send)
+
+    @staticmethod
+    def get_access_token(headers):
+        auth_header = headers[b"authorization"].decode("utf-8")
+        auth_token = auth_header.split(" ")[1]
+        return auth_token
+
+    @staticmethod
     @database_sync_to_async
-    def validate_token(self, token):
+    def validate_token(access_token):
+        authentication = JWTAuthentication()
+        return authentication.get_validated_token(access_token)
+
+    @staticmethod
+    @database_sync_to_async
+    def get_user(user_id):
+        User = get_user_model()
         try:
-            access_token = AccessToken(token)
-            return access_token
-        except (InvalidToken, TokenError) as e:
-            return None
+            print(user_id)
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return AnonymousUser()

@@ -146,3 +146,9 @@ class GetFriendSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "profile_pic"]
+        
+        
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ["from_user", "to_user", "message", "created_at"]
