@@ -151,6 +151,7 @@ class GetFriendSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     from_user = serializers.CharField(source='from_user.user.username')
     to_user = serializers.CharField(source='to_user.user.username')
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     
     class Meta:
         model = Message
