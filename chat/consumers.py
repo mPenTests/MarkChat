@@ -1,13 +1,13 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from .serializers import MessageSerializer
-from .models import Message, UserProfile, Group
+from .models import UserProfile, Group
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from channels.exceptions import StopConsumer
 
 
-class ChatConsumer(AsyncWebsocketConsumer):
+class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         user = self.scope['user']
         
@@ -19,9 +19,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = 'chat_%s' % self.room_name
 
         try:
-            group = Group.objects.get(uuid=self.room_name)
+            group = database_sync_to_async(Group.objects.get)(uuid=self.room_name)
         except (ObjectDoesNotExist, ValidationError):
-            await self.disconnect(404)
+            await self.close(404)
+            raise StopConsumer()
             
             
         # Join room group
@@ -33,7 +34,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         @database_sync_to_async
         def get_messages():
-            messages = Message.objects.filter(to_user=UserProfile.objects.get(user=self.scope["user"]))
+            messages = Group.objects.get(uuid=self.room_name).messages.all()
             serializer = MessageSerializer(messages, many=True)
 
             return serializer.data
