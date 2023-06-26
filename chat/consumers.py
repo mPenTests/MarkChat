@@ -20,6 +20,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         try:
             group = database_sync_to_async(Group.objects.get)(uuid=self.room_name)
+            profile = database_sync_to_async(UserProfile.objects.get)(user=user)
+            
+            if not group.users.exists(profile):
+                await self.close(403)
+                raise StopConsumer()
+            
         except (ObjectDoesNotExist, ValidationError):
             await self.close(404)
             raise StopConsumer()
