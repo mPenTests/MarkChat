@@ -156,3 +156,17 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ["from_user", "to_user", "message", "created_at"]
+        
+        
+    def create(self, validated_data):
+        sender = validated_data["from_user"]["user"]["username"]
+        receiver = validated_data["to_user"]["user"]["username"]
+        
+        sender_profile = UserProfile.objects.get(user=User.objects.get(username=sender))
+        receiver_profile = UserProfile.objects.get(user=User.objects.get(username=receiver))
+        
+        message = Message.objects.create(from_user=sender_profile, to_user=receiver_profile, message=validated_data["message"])
+        message.save()
+        
+        return message
+        

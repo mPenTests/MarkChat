@@ -2,7 +2,7 @@ import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from .serializers import MessageSerializer
-from .models import UserProfile, Group
+from .models import UserProfile, Group, Message
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from channels.exceptions import StopConsumer
 
@@ -58,8 +58,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-
+        message = text_data_json
 
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -69,10 +68,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
         )
         
-
+        
     async def chat_message(self, event):
         message = event['message']
-
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
+        serializer = MessageSerializer(data=message)
+                    
+        if serializer.is_valid():
+            serialized_data = serializer.validated_data
+            response = json.dumps(serialized_data)
+            
+            await self.send(text_data=response)
+            await database_sync_to_async(serializer.save)()
+            
+        #`await self.send(text_data=json.dumps(serializer.errors))
