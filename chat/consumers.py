@@ -80,4 +80,4 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.send(text_data=response)
             await database_sync_to_async(serializer.save)()
             
-        #`await self.send(text_data=json.dumps(serializer.errors))
+        await self.send(text_data=json.dumps(serializer.errors))
