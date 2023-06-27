@@ -57,9 +57,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json
-
+        try:
+            text_data_json = json.loads(text_data)
+            message = text_data_json
+            
+        except:
+            await self.close(3007)
+            raise StopConsumer()
+        
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -72,6 +77,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def chat_message(self, event):
         message = event['message']
         serializer = MessageSerializer(data=message)
+        
                     
         if serializer.is_valid():
             serialized_data = serializer.validated_data
@@ -80,4 +86,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.send(text_data=response)
             await database_sync_to_async(serializer.save)()
             
-        await self.send(text_data=json.dumps(serializer.errors))
+            
+            @database_sync_to_async
+            def add_msg_to_group(message):
+                group = Group.objects.get(uuid=self.room_name)
+                group.messages.add(message)
+                group.save()
+                    
+            await add_msg_to_group(serializer.instance)
+            
+        else: 
+            await self.send(text_data=json.dumps(serializer.errors))
