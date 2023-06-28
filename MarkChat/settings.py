@@ -39,12 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'chat'
+    'chat',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -196,4 +198,8 @@ CHANNEL_LAYERS = {
 CHANNELS_WS_PROTOCOLS = [
     "channels.routing.protocol.http.HtppProtocol",
     "chat.jwt_middleware.JWTAuthMiddleware"
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173"
 ]
